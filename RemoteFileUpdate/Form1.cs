@@ -63,7 +63,7 @@ namespace RemoteFileUpdate
             }
         }
 
-        private void btnUpload_Click(object sender, EventArgs e)
+        private async void btnUpload_Click(object sender, EventArgs e)
         {
             string configPath = Path.Combine(Application.StartupPath, "config.local.json");
             var config = LoadConfig(configPath);
@@ -72,13 +72,97 @@ namespace RemoteFileUpdate
             {
                 ip = GetConfigOrError(config, "serverIP");
                 port = GetConfigOrError(config, "serverPort");
-                MessageBox.Show(ip);
             }
             catch ( Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 return;
             }
+
+            string project = comboProject.SelectedItem?.ToString();
+            string version = txtVersion.Text.Trim();
+
+            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
+            {
+                MessageBox.Show("프로젝트와 버전을 입력해주세요.");
+                return;
+            }
+
+            string uploadUrl = $"http://{ip}:{port}/api/upload";
+
+            // 파일 목록 확인
+            var files = new List<(string FilePath, string TargetPath)>();
+            foreach (DataGridViewRow row in gridFiles.Rows)
+            {
+                string file = row.Cells[0].Value?.ToString();
+                string dest = row.Cells[1].Value?.ToString();
+                if (!string.IsNullOrEmpty(file) && !string.IsNullOrEmpty(dest))
+                {
+                    files.Add((file, dest));
+                }
+            }
+
+            if (files.Count == 0)
+            {
+                MessageBox.Show("업로드할 파일이 없습니다.");
+                return;
+            }
+
+            // 임시 디렉토리 생성 (중복방지를 위한 GUID 기반 새폴더 생성)
+            string tempDir = Path.Combine(Path.GetTempPath(), "Uploader_" + Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            string manifestPath = Path.Combine(tempDir, "manifest.txt");
+
+            // 파일 복사 및 manifest 작성
+            using (var writer = new StreamWriter(manifestPath))
+            {
+                foreach (var (file, dest) in files)
+                {
+                    string destFileName = Path.GetFileName(file);
+                    string destPath = Path.Combine(tempDir, destFileName);
+                    File.Copy(file, destPath, true);
+                    writer.WriteLine($"{destFileName}:{dest}");
+                }
+            }
+
+            // zip 압축
+            string zipPath = Path.Combine(Path.GetTempPath(), $"{version}.zip");
+            if (File.Exists(zipPath))
+            {
+                File.Delete(zipPath);
+            }
+            ZipFile.CreateFromDirectory(tempDir, zipPath);
+
+            // 전송
+            using (var client = new HttpClient())
+            using (var content = new MultipartFormDataContent())
+            {
+                content.Add(new StringContent(project), "project");
+                content.Add(new StringContent(version), "version");
+                content.Add(new StreamContent(File.OpenRead(zipPath)), "file", $"{version}.zip");
+
+                try
+                {
+                    var response = await client.PostAsync(uploadUrl, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("업로드 성공");
+                    }
+                    else
+                    {
+                        string err = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show("업로드 실패");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("전송 중 오류 발생: " + ex.Message);
+                }
+            }
+
+            // 정리
+            Directory.Delete(tempDir, true);
+            File.Delete(zipPath);
         }
     }
 }
