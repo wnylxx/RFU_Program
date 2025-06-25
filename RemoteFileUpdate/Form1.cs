@@ -16,5 +16,15 @@ namespace RemoteFileUpdate
         {
             InitializeComponent();
         }
+
+        private void btnAddFile_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnUpload_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
