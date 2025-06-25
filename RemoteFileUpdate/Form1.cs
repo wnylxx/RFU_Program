@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Linq;
 
 namespace RemoteFileUpdate
 {
@@ -114,14 +115,25 @@ namespace RemoteFileUpdate
             string manifestPath = Path.Combine(tempDir, "manifest.txt");
 
             // 파일 복사 및 manifest 작성
-            using (var writer = new StreamWriter(manifestPath))
+            using (var writer = new StreamWriter(manifestPath, false, Encoding.UTF8))
             {
                 foreach (var (file, dest) in files)
                 {
                     string destFileName = Path.GetFileName(file);
-                    string destPath = Path.Combine(tempDir, destFileName);
-                    File.Copy(file, destPath, true);
-                    writer.WriteLine($"{destFileName}:{dest}");
+                    string destPath = dest.Trim();
+                    
+                    // 목적지가 디렉토리로 끝나면 파일명을 붙혀준다.
+                    if (destPath.EndsWith("/") || destPath.EndsWith("\\"))
+                    {
+                        destPath = Path.Combine(destPath, destFileName).Replace("\\", "/");
+                    }
+
+                    // 복사
+                    string tempDestFile = Path.Combine(tempDir, destFileName);
+                    File.Copy(file, tempDestFile, true);
+
+                    // manifest.txt 작성
+                    writer.WriteLine($"{destFileName}:{destPath}");
                 }
             }
 
