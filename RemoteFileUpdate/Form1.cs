@@ -11,39 +11,30 @@ using System.Windows.Forms;
 using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Linq;
+//using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace RemoteFileUpdate
 {
     public partial class Form1 : Form
     {
+
         public Form1()
         {
             InitializeComponent();
-        }
 
-        // local.json 파일 읽기
-        private Dictionary<string, string> LoadConfig(string path)
-        {
-            if (!File.Exists(path))
+            try
             {
-                MessageBox.Show($"설정 파일이 없습니다: {path}");
-                return new Dictionary<string, string>();
+                AppConfig.Load();
             }
-
-            var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-        }
-
-        private string GetConfigOrError(Dictionary<string, string> config, string key)
-        {
-            if (!config.TryGetValue(key, out string value) || string.IsNullOrWhiteSpace(value))
+            catch (Exception ex)
             {
-                throw new Exception($"설정 파일에 '{key}' 값이 누락되어 있습니다.");
+                MessageBox.Show("설정 로딩 실패: " + ex.Message);
+                Environment.Exit(1);
             }
-            return value;
         }
+
+
 
         // project-version 받아오기
         public async Task FetchAndSetVersionAsync(string selectedProjectName, Label targetLabel)
@@ -52,19 +43,9 @@ namespace RemoteFileUpdate
             {
                 try
                 {
-                    string configPath = Path.Combine(Application.StartupPath, "config.local.json");
-                    var config = LoadConfig(configPath);
-                    string ip, port;
-                    try
-                    {
-                        ip = GetConfigOrError(config, "serverIP");
-                        port = GetConfigOrError(config, "serverPort");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                        return;
-                    }
+                    string ip = AppConfig.ServerIP;
+                    string port = AppConfig.ServerPort;
+
                     string apiUrl = $"http://{ip}:{port}/api/version?project={selectedProjectName}";
                     var response = await client.GetAsync(apiUrl);
                     response.EnsureSuccessStatusCode();
@@ -120,20 +101,6 @@ namespace RemoteFileUpdate
 
         private async void btnUpload_Click(object sender, EventArgs e)
         {
-            string configPath = Path.Combine(Application.StartupPath, "config.local.json");
-            var config = LoadConfig(configPath);
-            string ip, port;
-            try
-            {
-                ip = GetConfigOrError(config, "serverIP");
-                port = GetConfigOrError(config, "serverPort");
-            }
-            catch ( Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
-            }
-
             string project = comboProject.SelectedItem?.ToString();
             string version = txtVersion.Text.Trim();
 
@@ -142,6 +109,9 @@ namespace RemoteFileUpdate
                 MessageBox.Show("프로젝트와 버전을 입력해주세요.");
                 return;
             }
+
+            string ip = AppConfig.ServerIP;
+            string port = AppConfig.ServerPort;
 
             string uploadUrl = $"http://{ip}:{port}/api/upload";
 
