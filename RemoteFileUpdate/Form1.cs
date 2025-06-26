@@ -77,9 +77,6 @@ namespace RemoteFileUpdate
 
 
         // Component
-
-
-
         private void btnAddFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog
@@ -183,6 +180,7 @@ namespace RemoteFileUpdate
                     if (response.IsSuccessStatusCode)
                     {
                         MessageBox.Show("업로드 성공");
+                        await FetchAndSetVersionAsync(project, lblVersion);
                     }
                     else
                     {
