@@ -15,7 +15,7 @@ namespace RemoteFileUpdate
         private DataGridView gridFiles;
         private DataGridViewTextBoxColumn FileNameCol;
         private DataGridViewTextBoxColumn TargetPathCol;
-
+        private Label lblVersion;
 
         /// <summary>
         /// 사용 중인 모든 리소스를 정리합니다.
@@ -46,6 +46,7 @@ namespace RemoteFileUpdate
             this.gridFiles = new System.Windows.Forms.DataGridView();
             this.FileNameCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TargetPathCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.lblVersion = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,6 +59,7 @@ namespace RemoteFileUpdate
             this.comboProject.Name = "comboProject";
             this.comboProject.Size = new System.Drawing.Size(150, 20);
             this.comboProject.TabIndex = 0;
+            this.comboProject.SelectedIndexChanged += new System.EventHandler(this.comboProject_SelectedIndexChanged);
             // 
             // txtVersion
             // 
@@ -68,47 +70,52 @@ namespace RemoteFileUpdate
             // 
             // btnAddFile
             // 
-            this.btnAddFile.Location = new System.Drawing.Point(310, 20);
+            this.btnAddFile.Location = new System.Drawing.Point(445, 20);
             this.btnAddFile.Name = "btnAddFile";
             this.btnAddFile.Size = new System.Drawing.Size(75, 23);
             this.btnAddFile.TabIndex = 2;
             this.btnAddFile.Text = "파일 추가";
             this.btnAddFile.Click += new System.EventHandler(this.btnAddFile_Click);
             // 
-            // gridFiles
-            // 
-            this.gridFiles.Location = new System.Drawing.Point(20, 60);
-            this.gridFiles.Name = "gridFiles";
-            this.gridFiles.Size = new System.Drawing.Size(500, 200);
-            this.gridFiles.TabIndex = 0;
-            this.gridFiles.Columns.AddRange(new DataGridViewColumn[]
-            {
-                this.FileNameCol, this.TargetPathCol
-            });
-            this.FileNameCol.HeaderText = "파일명";
-            this.FileNameCol.Width = 200;
-
-            this.TargetPathCol.HeaderText = "Client 목적 경로";
-            this.TargetPathCol.Width = 280;
-
-            // 
             // btnUpload
             // 
-            this.btnUpload.Location = new System.Drawing.Point(420, 270);
+            this.btnUpload.Location = new System.Drawing.Point(40, 270);
             this.btnUpload.Name = "btnUpload";
             this.btnUpload.Size = new System.Drawing.Size(75, 23);
             this.btnUpload.TabIndex = 0;
             this.btnUpload.Text = "전송";
             this.btnUpload.Click += new System.EventHandler(this.btnUpload_Click);
-
+            // 
+            // gridFiles
+            // 
+            this.gridFiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.FileNameCol,
+            this.TargetPathCol});
+            this.gridFiles.Location = new System.Drawing.Point(20, 60);
+            this.gridFiles.Name = "gridFiles";
+            this.gridFiles.Size = new System.Drawing.Size(500, 200);
+            this.gridFiles.TabIndex = 0;
             // 
             // FileNameCol
             // 
+            this.FileNameCol.HeaderText = "파일명";
             this.FileNameCol.Name = "FileNameCol";
+            this.FileNameCol.Width = 200;
             // 
             // TargetPathCol
             // 
+            this.TargetPathCol.HeaderText = "Client 목적 경로";
             this.TargetPathCol.Name = "TargetPathCol";
+            this.TargetPathCol.Width = 280;
+            // 
+            // lblVersion
+            // 
+            this.lblVersion.AutoSize = true;
+            this.lblVersion.Location = new System.Drawing.Point(300, 25);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(53, 12);
+            this.lblVersion.TabIndex = 3;
+            this.lblVersion.Text = "버전정보";
             // 
             // Form1
             // 
@@ -118,7 +125,8 @@ namespace RemoteFileUpdate
             this.Controls.Add(this.btnAddFile);
             this.Controls.Add(this.gridFiles);
             this.Controls.Add(this.btnUpload);
-            this.Name = "Remote File Uploader";
+            this.Controls.Add(this.lblVersion);
+            this.Name = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

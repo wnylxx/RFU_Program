@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RemoteFileUpdate
 {
@@ -43,6 +44,59 @@ namespace RemoteFileUpdate
             }
             return value;
         }
+
+        // project-version 받아오기
+        public async Task FetchAndSetVersionAsync(string selectedProjectName, Label targetLabel)
+        {
+            using (var client = new HttpClient())
+            {
+                try
+                {
+                    string configPath = Path.Combine(Application.StartupPath, "config.local.json");
+                    var config = LoadConfig(configPath);
+                    string ip, port;
+                    try
+                    {
+                        ip = GetConfigOrError(config, "serverIP");
+                        port = GetConfigOrError(config, "serverPort");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        return;
+                    }
+                    string apiUrl = $"http://{ip}:{port}/api/version?project={selectedProjectName}";
+                    var response = await client.GetAsync(apiUrl);
+                    response.EnsureSuccessStatusCode();
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    var obj = JObject.Parse(json);
+
+                    if (obj["version"] != null)
+                    {
+                        string version = obj["version"].ToString();
+                        lblVersion.Text = version;
+                    }
+                    else if (obj["message"] != null)
+                    {
+                        lblVersion.Text = obj["message"].ToString(); // "버전 정보가 없습니다."
+                    }
+                    else
+                    {
+                        lblVersion.Text = "알 수 없는 응답";
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    targetLabel.Text = "서버 오류";
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+
+        // Component
+
 
 
         private void btnAddFile_Click(object sender, EventArgs e)
@@ -175,6 +229,12 @@ namespace RemoteFileUpdate
             // 정리
             Directory.Delete(tempDir, true);
             File.Delete(zipPath);
+        }
+
+        private async void comboProject_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedProject = comboProject.SelectedItem.ToString();
+            await FetchAndSetVersionAsync(selectedProject, lblVersion);
         }
     }
 }
