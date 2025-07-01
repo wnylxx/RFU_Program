@@ -141,20 +141,23 @@ namespace RemoteFileUpdate
                 foreach (var (file, dest) in files)
                 {
                     string destFileName = Path.GetFileName(file);
-                    string destPath = dest.Trim();
+                    string destPath = dest.Trim().Replace("\\", "/");
+
                     
-                    // 목적지가 디렉토리로 끝나면 파일명을 붙혀준다.
-                    if (destPath.EndsWith("/") || destPath.EndsWith("\\"))
+                    // 경로가 "/"로 끝나지 않으면 붙혀주기
+                    if(!destPath.EndsWith("/"))
                     {
-                        destPath = Path.Combine(destPath, destFileName).Replace("\\", "/");
+                        destPath += "/";
                     }
 
-                    // 복사
+                    string fullDestPath = destPath + destFileName;
+
+                    // 파일을 임시 디렉토리로 복사
                     string tempDestFile = Path.Combine(tempDir, destFileName);
                     File.Copy(file, tempDestFile, true);
 
                     // manifest.txt 작성
-                    writer.WriteLine($"{destFileName}:{destPath}");
+                    writer.WriteLine($"{destFileName}:{fullDestPath}");
                 }
             }
 
