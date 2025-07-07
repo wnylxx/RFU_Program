@@ -207,5 +207,7 @@ namespace RemoteFileUpdate
             string selectedProject = comboProject.SelectedItem.ToString();
             await FetchAndSetVersionAsync(selectedProject, lblVersion);
         }
+
+        
     }
 }
