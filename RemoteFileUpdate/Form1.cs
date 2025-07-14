@@ -75,6 +75,27 @@ namespace RemoteFileUpdate
             }
         }
 
+        private void WriteLog(string message)
+        {
+            if (txtLog.InvokeRequired)
+            {
+                txtLog.Invoke(new Action(() =>
+                {
+                    AppendLog(message);
+                }));
+            }
+            else
+            {
+                AppendLog(message);
+            }
+        }
+
+        private void AppendLog(string message)
+        {
+            string timeStampedMessage = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
+            txtLog.AppendText(timeStampedMessage);
+        }
+
 
         // Component
         private void btnAddFile_Click(object sender, EventArgs e)
@@ -206,6 +227,40 @@ namespace RemoteFileUpdate
         {
             string selectedProject = comboProject.SelectedItem.ToString();
             await FetchAndSetVersionAsync(selectedProject, lblVersion);
+
+            string ip = AppConfig.ServerIP;
+            string port = AppConfig.ServerPort;
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://{ip}:{port}/api/connected-devices");
+                    response.EnsureSuccessStatusCode();
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    var parsed = JObject.Parse(json);
+                    var devices = parsed["projects"]?[selectedProject];
+
+                    if (devices != null)
+                    {
+                        int count = devices.Count();
+                        WriteLog($"[프로젝트: {selectedProject}] 총 연결된 장비 수: {count}");
+                        foreach (var device in devices)
+                        {
+                            WriteLog($" - Device ID: {device.Path}");
+                        }
+                    }
+                    else
+                    {
+                        WriteLog($"[프로젝트: {selectedProject}] 연결된 장비가 없습니다.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"[오류] 장비 목록 조회 실패: {ex.Message}");
+            }
         }
 
         
