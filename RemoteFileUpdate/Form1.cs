@@ -203,17 +203,20 @@ namespace RemoteFileUpdate
                     var response = await client.PostAsync(uploadUrl, content);
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show("업로드 성공");
+                        WriteLog("업로드 성공");
+
                         await FetchAndSetVersionAsync(project, lblVersion);
                     }
                     else
                     {
                         string err = await response.Content.ReadAsStringAsync();
+                        WriteLog("업로드 실패");
                         MessageBox.Show("업로드 실패");
                     }
                 }
                 catch (Exception ex)
                 {
+                    WriteLog("전송 중 오류 발생");
                     MessageBox.Show("전송 중 오류 발생: " + ex.Message);
                 }
             }
