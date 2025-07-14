@@ -97,6 +97,43 @@ namespace RemoteFileUpdate
         }
 
 
+        private System.Windows.Forms.Timer updateSummaryTimer;
+        private int updateTotalExpected = -1;
+        private string currentProject = "";
+        private bool updateCompleted = false;
+
+        private void StartUpdateMonitoring(string project)
+        {
+            currentProject = project;
+            updateCompleted = false;
+
+            updateSummaryTimer = new System.Windows.Forms.Timer();
+            updateSummaryTimer.Interval = 3000; // 3초
+            updateSummaryTimer.Tick += async (s, e) => await CheckUpdateSummary();
+            updateSummaryTimer.Start();
+        }
+
+        private async Task CheckUpdateSummary()
+        {
+            if (updateCompleted) return;
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    // Todo: Get update result
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"[오류] 업데이트 상태 조회 실패: {ex.Message}");
+            }
+        }
+
+
+
+
+
         // Component
         private void btnAddFile_Click(object sender, EventArgs e)
         {
