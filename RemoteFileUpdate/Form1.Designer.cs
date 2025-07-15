@@ -17,7 +17,7 @@ namespace RemoteFileUpdate
         private DataGridViewTextBoxColumn TargetPathCol;
         private Label lblVersion;
         private TextBox txtLog;
-        private ProgressBar progressBar1
+        private ProgressBar progressBar1;
 
         /// <summary>
         /// 사용 중인 모든 리소스를 정리합니다.

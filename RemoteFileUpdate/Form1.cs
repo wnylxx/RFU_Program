@@ -117,11 +117,45 @@ namespace RemoteFileUpdate
         {
             if (updateCompleted) return;
 
+            string ip = AppConfig.ServerIP;
+            string port = AppConfig.ServerPort;
+
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    // Todo: Get update result
+                    var response = await client.GetAsync($"http://{ip}:{port}/api/update-summary?project={currentProject}");
+                    response.EnsureSuccessStatusCode();
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    var parsed = JObject.Parse(json);
+
+                    int total = parsed["total"]?.Value<int>() ?? 0;
+                    int success = parsed["success"]?.Value<int>() ?? 0;
+                    int failure = parsed["failure"]?.Value<int>() ?? 0;
+
+                    int percent = total == 0 ? 0 : (success + failure) * 100 / total;
+                    progressBar1.Value = percent;
+
+                    if ((success + failure) == total && total > 0)
+                    {
+                        updateCompleted = true;
+                        updateSummaryTimer.Stop();
+
+                        WriteLog($"업데이트 완료: 총 {total}대, 성공 {success}대, 실패 {failure}대");
+
+                        var failedDevices = parsed["failedDevices"];
+                        if (failedDevices != null && failedDevices.Any())
+                        {
+                            WriteLog("실패한 장비 목록:");
+                            foreach (var dev in failedDevices)
+                            {
+                                WriteLog($" - {dev}");
+                            }
+                        }
+
+                    }
+
                 }
             }
             catch (Exception ex)
@@ -240,9 +274,11 @@ namespace RemoteFileUpdate
                     var response = await client.PostAsync(uploadUrl, content);
                     if (response.IsSuccessStatusCode)
                     {
-                        WriteLog("업로드 성공");
+                        WriteLog($"{version} 업로드 성공");
 
                         await FetchAndSetVersionAsync(project, lblVersion);
+
+                        StartUpdateMonitoring(project);
                     }
                     else
                     {
