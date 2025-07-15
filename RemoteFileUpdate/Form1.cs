@@ -316,15 +316,20 @@ namespace RemoteFileUpdate
 
                     var json = await response.Content.ReadAsStringAsync();
                     var parsed = JObject.Parse(json);
-                    var devices = parsed["projects"]?[selectedProject];
+                    var devicesToken = parsed["projects"]?[selectedProject];
 
-                    if (devices != null)
+                    if (devicesToken != null && devicesToken.Type == JTokenType.Object)
                     {
-                        int count = devices.Count();
+                        var devicesObj = (JObject)devicesToken;
+                        var sortedDevices = devicesObj.Properties()
+                            .OrderBy(p => p.Name)
+                            .ToList();
+
+                        int count = sortedDevices.Count();
                         WriteLog($"[프로젝트: {selectedProject}] 총 연결된 장비 수: {count}");
-                        foreach (var device in devices)
+                        foreach (var device in sortedDevices)
                         {
-                            WriteLog($" - Device ID: {device.Path}");
+                            WriteLog($"    - Device ID: {device.Name}");
                         }
                     }
                     else
