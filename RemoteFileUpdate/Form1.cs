@@ -13,6 +13,7 @@ using System.IO.Compression;
 using System.Net.Http;
 //using System.Linq;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace RemoteFileUpdate
 {
@@ -192,10 +193,17 @@ namespace RemoteFileUpdate
         {
             string project = comboProject.SelectedItem?.ToString();
             string version = txtVersion.Text.Trim();
+            string versionPatten = @"^\d+\.\d+\.\d+$"; // 유효성 검사 0.0.0 형태
 
             if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
             {
                 MessageBox.Show("프로젝트와 버전을 입력해주세요.");
+                return;
+            }
+
+            if (!Regex.IsMatch(version, versionPatten))
+            {
+                MessageBox.Show("버전 형식이 잘못되었습니다. 예: 1.0.0");
                 return;
             }
 
