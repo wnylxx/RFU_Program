@@ -17,6 +17,7 @@ namespace RemoteFileUpdate
         private DataGridViewTextBoxColumn TargetPathCol;
         private Label lblVersion;
         private TextBox txtLog;
+        private ProgressBar progressBar1
 
         /// <summary>
         /// 사용 중인 모든 리소스를 정리합니다.
@@ -49,6 +50,7 @@ namespace RemoteFileUpdate
             this.TargetPathCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lblVersion = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
             this.SuspendLayout();
             // 
@@ -124,14 +126,23 @@ namespace RemoteFileUpdate
             this.txtLog.Location = new System.Drawing.Point(20, 260);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
-            this.txtLog.Size = new System.Drawing.Size(550, 200);
-            this.txtLog.ScrollBars = ScrollBars.Both;
             this.txtLog.ReadOnly = true;
+            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtLog.Size = new System.Drawing.Size(550, 200);
             this.txtLog.TabIndex = 4;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(20, 472);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(550, 15);
+            this.progressBar1.TabIndex = 5;
+            this.progressBar1.Minimum = 0;
+            this.progressBar1.Maximum = 100;
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(592, 476);
+            this.ClientSize = new System.Drawing.Size(592, 499);
             this.Controls.Add(this.comboProject);
             this.Controls.Add(this.txtVersion);
             this.Controls.Add(this.btnAddFile);
@@ -139,6 +150,7 @@ namespace RemoteFileUpdate
             this.Controls.Add(this.btnUpload);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.txtLog);
+            this.Controls.Add(this.progressBar1);
             this.Name = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).EndInit();
             this.ResumeLayout(false);
