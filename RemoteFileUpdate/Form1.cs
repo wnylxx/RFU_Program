@@ -131,15 +131,23 @@ namespace RemoteFileUpdate
                     var json = await response.Content.ReadAsStringAsync();
                     var parsed = JObject.Parse(json);
 
-                    int total = parsed["total"]?.Value<int>() ?? 0;
-                    int success = parsed["success"]?.Value<int>() ?? 0;
-                    int failure = parsed["failure"]?.Value<int>() ?? 0;
+                    var status = parsed["status"]?.ToString();
 
-                    int percent = total == 0 ? 0 : (success + failure) * 100 / total;
-                    progressBar1.Value = percent;
-
-                    if ((success + failure) == total && total > 0)
+                    if(status == "progress")
                     {
+                        int total = parsed["total"]?.Value<int>() ?? 0;
+                        int received = parsed["received"]?.Value<int>() ?? 0;
+
+                        WriteLog($"[진행 중] {received}/{total} 응답 도착");
+                        return;
+                    }
+
+                    if (status == "done")
+                    {
+                        int total = parsed["total"]?.Value<int>() ?? 0;
+                        int success = parsed["success"]?.Value<int>() ?? 0;
+                        int failure = parsed["failure"]?.Value<int>() ?? 0;
+
                         updateCompleted = true;
                         updateSummaryTimer.Stop();
 
@@ -148,15 +156,14 @@ namespace RemoteFileUpdate
                         var failedDevices = parsed["failedDevices"];
                         if (failedDevices != null && failedDevices.Any())
                         {
-                            WriteLog("실패한 장비 목록:");
-                            foreach (var dev in failedDevices)
+                            WriteLog("실패한 장비 목록");
+                            foreach (var device in failedDevices)
                             {
-                                WriteLog($" - {dev}");
+                                WriteLog($"    - {device}");
                             }
                         }
 
                     }
-
                 }
             }
             catch (Exception ex)
