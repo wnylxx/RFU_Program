@@ -49,6 +49,7 @@ namespace RemoteFileUpdate
             this.TargetPathCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lblVersion = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
+            this.btnUploadOnly = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
             this.SuspendLayout();
             // 
@@ -72,7 +73,7 @@ namespace RemoteFileUpdate
             // 
             // btnAddFile
             // 
-            this.btnAddFile.Location = new System.Drawing.Point(395, 20);
+            this.btnAddFile.Location = new System.Drawing.Point(495, 18);
             this.btnAddFile.Name = "btnAddFile";
             this.btnAddFile.Size = new System.Drawing.Size(75, 23);
             this.btnAddFile.TabIndex = 2;
@@ -81,7 +82,7 @@ namespace RemoteFileUpdate
             // 
             // btnUpload
             // 
-            this.btnUpload.Location = new System.Drawing.Point(495, 20);
+            this.btnUpload.Location = new System.Drawing.Point(495, 278);
             this.btnUpload.Name = "btnUpload";
             this.btnUpload.Size = new System.Drawing.Size(75, 23);
             this.btnUpload.TabIndex = 0;
@@ -121,17 +122,27 @@ namespace RemoteFileUpdate
             // 
             // txtLog
             // 
-            this.txtLog.Location = new System.Drawing.Point(20, 260);
+            this.txtLog.Location = new System.Drawing.Point(20, 330);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(550, 200);
+            this.txtLog.Size = new System.Drawing.Size(550, 255);
             this.txtLog.TabIndex = 4;
+            // 
+            // btnUploadOnly
+            // 
+            this.btnUploadOnly.Location = new System.Drawing.Point(353, 278);
+            this.btnUploadOnly.Name = "btnUploadOnly";
+            this.btnUploadOnly.Size = new System.Drawing.Size(106, 23);
+            this.btnUploadOnly.TabIndex = 5;
+            this.btnUploadOnly.Text = "백업 없이 전송";
+            this.btnUploadOnly.Click += new System.EventHandler(this.btnUploadOnly_Click);
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(592, 481);
+            this.ClientSize = new System.Drawing.Size(592, 597);
+            this.Controls.Add(this.btnUploadOnly);
             this.Controls.Add(this.comboProject);
             this.Controls.Add(this.txtVersion);
             this.Controls.Add(this.btnAddFile);
@@ -147,6 +158,8 @@ namespace RemoteFileUpdate
         }
 
         #endregion
+
+        private Button btnUploadOnly;
     }
 }
 

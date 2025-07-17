@@ -34,7 +34,27 @@ namespace RemoteFileUpdate
                 Environment.Exit(1);
             }
         }
+        // upload 전 version과 파일 업로드 확인
+        private bool TryGetProjectAndVersion(out string project, out string version)
+        {
+            project = comboProject.SelectedItem?.ToString();
+            version = txtVersion.Text.Trim();
+            string versionPatten = @"^\d+\.\d+\.\d+$"; // 유효성 검사 0.0.0 형태
 
+            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
+            {
+                MessageBox.Show("프로젝트와 버전을 입력해주세요.");
+                return false;
+            }
+
+            if (!Regex.IsMatch(version, versionPatten))
+            {
+                MessageBox.Show("버전 형식이 잘못되었습니다. 예: 1.0.0");
+                return false;
+            }
+
+            return true;
+        }
 
 
         // project-version 받아오기
@@ -198,21 +218,23 @@ namespace RemoteFileUpdate
 
         private async void btnUpload_Click(object sender, EventArgs e)
         {
-            string project = comboProject.SelectedItem?.ToString();
-            string version = txtVersion.Text.Trim();
-            string versionPatten = @"^\d+\.\d+\.\d+$"; // 유효성 검사 0.0.0 형태
+            //string project = comboProject.SelectedItem?.ToString();
+            //string version = txtVersion.Text.Trim();
+            //string versionPatten = @"^\d+\.\d+\.\d+$"; // 유효성 검사 0.0.0 형태
 
-            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
-            {
-                MessageBox.Show("프로젝트와 버전을 입력해주세요.");
-                return;
-            }
+            //if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
+            //{
+            //    MessageBox.Show("프로젝트와 버전을 입력해주세요.");
+            //    return;
+            //}
 
-            if (!Regex.IsMatch(version, versionPatten))
-            {
-                MessageBox.Show("버전 형식이 잘못되었습니다. 예: 1.0.0");
-                return;
-            }
+            //if (!Regex.IsMatch(version, versionPatten))
+            //{
+            //    MessageBox.Show("버전 형식이 잘못되었습니다. 예: 1.0.0");
+            //    return;
+            //}
+
+            if (!TryGetProjectAndVersion(out string project, out string version)) return;
 
             string ip = AppConfig.ServerIP;
             string port = AppConfig.ServerPort;
@@ -359,6 +381,9 @@ namespace RemoteFileUpdate
             }
         }
 
-        
+        private void btnUploadOnly_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
