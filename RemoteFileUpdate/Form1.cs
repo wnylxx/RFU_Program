@@ -14,6 +14,7 @@ using System.Net.Http;
 //using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 
 namespace RemoteFileUpdate
 {
@@ -53,7 +54,69 @@ namespace RemoteFileUpdate
                 return false;
             }
 
+            WriteLog("파일 업로드 시작");
+
             return true;
+        }
+
+        // 파일 압축 및 업로드
+        private async Task<string> CreateUpdateZipAsync(string project, string version)
+        {
+            // 파일 목록 수집
+            var files = new List<(string FilePath, string TargetPath)>();
+            foreach (DataGridViewRow row in gridFiles.Rows)
+            {
+                string file = row.Cells[0].Value?.ToString();
+                string dest = row.Cells[1].Value?.ToString();
+                if (!string.IsNullOrEmpty(file) && !string.IsNullOrEmpty(dest))
+                {
+                    files.Add((file, dest));
+                }
+            }
+
+            if (files.Count == 0)
+            {
+                MessageBox.Show("업로드할 파일이 없습니다.");
+                return null;
+            }
+
+            // 임시 디렉토리 및 manifest 생성
+            string tempDir = Path.Combine(Path.GetTempPath(), "Uploader_" + Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            string manifestPath = Path.Combine(tempDir, "manifest.txt");
+
+            using (var writer = new StreamWriter(manifestPath, false, Encoding.UTF8))
+            {
+                foreach (var (file, dest) in files)
+                {
+                    string destFileName = Path.GetFileName(file);
+                    string destPath = dest.Trim().Replace("\\", "/");
+
+                    if (!destPath.EndsWith("/"))
+                        destPath += "/";
+
+                    string fullDestPath = destPath + destFileName;
+                    string tempDestFile = Path.Combine(tempDir, destFileName);
+                    File.Copy(file, tempDestFile, true);
+
+                    writer.WriteLine($"{destFileName}:{fullDestPath}");
+                }
+            }
+
+            // zip 압축
+            string zipPath = Path.Combine(Path.GetTempPath(), $"{version}.zip");
+            if (File.Exists(zipPath))
+                File.Delete(zipPath);
+
+            ZipFile.CreateFromDirectory(tempDir, zipPath);
+            Directory.Delete(tempDir, true); // 임시 폴더 삭제
+
+            WriteLog("파일 압축 성공!");
+
+
+            // cleanup은 호출한 쪽에서 할 수 있도록 zipPath만 반환
+            return zipPath;
+
         }
 
 
@@ -218,85 +281,18 @@ namespace RemoteFileUpdate
 
         private async void btnUpload_Click(object sender, EventArgs e)
         {
-            //string project = comboProject.SelectedItem?.ToString();
-            //string version = txtVersion.Text.Trim();
-            //string versionPatten = @"^\d+\.\d+\.\d+$"; // 유효성 검사 0.0.0 형태
-
-            //if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(version))
-            //{
-            //    MessageBox.Show("프로젝트와 버전을 입력해주세요.");
-            //    return;
-            //}
-
-            //if (!Regex.IsMatch(version, versionPatten))
-            //{
-            //    MessageBox.Show("버전 형식이 잘못되었습니다. 예: 1.0.0");
-            //    return;
-            //}
-
+            // 유효성 검사
             if (!TryGetProjectAndVersion(out string project, out string version)) return;
+
+            // 파일 압축
+            string zipPath = await CreateUpdateZipAsync(project, version);
+            if (zipPath == null) return;
+
 
             string ip = AppConfig.ServerIP;
             string port = AppConfig.ServerPort;
 
             string uploadUrl = $"http://{ip}:{port}/api/upload";
-
-            // 파일 목록 확인
-            var files = new List<(string FilePath, string TargetPath)>();
-            foreach (DataGridViewRow row in gridFiles.Rows)
-            {
-                string file = row.Cells[0].Value?.ToString();
-                string dest = row.Cells[1].Value?.ToString();
-                if (!string.IsNullOrEmpty(file) && !string.IsNullOrEmpty(dest))
-                {
-                    files.Add((file, dest));
-                }
-            }
-
-            if (files.Count == 0)
-            {
-                MessageBox.Show("업로드할 파일이 없습니다.");
-                return;
-            }
-
-            // 임시 디렉토리 생성 (중복방지를 위한 GUID 기반 새폴더 생성)
-            string tempDir = Path.Combine(Path.GetTempPath(), "Uploader_" + Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-            string manifestPath = Path.Combine(tempDir, "manifest.txt");
-
-            // 파일 복사 및 manifest 작성
-            using (var writer = new StreamWriter(manifestPath, false, Encoding.UTF8))
-            {
-                foreach (var (file, dest) in files)
-                {
-                    string destFileName = Path.GetFileName(file);
-                    string destPath = dest.Trim().Replace("\\", "/");
-
-                    
-                    // 경로가 "/"로 끝나지 않으면 붙혀주기
-                    if(!destPath.EndsWith("/"))
-                    {
-                        destPath += "/";
-                    }
-
-                    string fullDestPath = destPath + destFileName;
-
-                    // 파일을 임시 디렉토리로 복사
-                    string tempDestFile = Path.Combine(tempDir, destFileName);
-                    File.Copy(file, tempDestFile, true);
-
-                    // manifest.txt 작성
-                    writer.WriteLine($"{destFileName}:{fullDestPath}");
-                }
-            }
-
-            // zip 압축
-            string zipPath = Path.Combine(Path.GetTempPath(), $"{version}.zip");
-            if (File.Exists(zipPath))
-            {
-                File.Delete(zipPath);
-            }
-            ZipFile.CreateFromDirectory(tempDir, zipPath);
 
             // 전송
             using (var client = new HttpClient())
@@ -332,7 +328,7 @@ namespace RemoteFileUpdate
             }
 
             // 정리
-            Directory.Delete(tempDir, true);
+            //Directory.Delete(tempDir, true);
             File.Delete(zipPath);
         }
 
@@ -383,7 +379,9 @@ namespace RemoteFileUpdate
 
         private void btnUploadOnly_Click(object sender, EventArgs e)
         {
+            if (!TryGetProjectAndVersion(out string project, out string version)) return;
 
+            // zip 파일 생성 로직은 기존 btnUpload_Click 복사
         }
     }
 }
