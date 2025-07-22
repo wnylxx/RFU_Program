@@ -17,6 +17,9 @@ namespace RemoteFileUpdate
         private DataGridViewTextBoxColumn TargetPathCol;
         private Label lblVersion;
         private TextBox txtLog;
+        private Button btnBackupOnly;
+        private Button btnRollbackOnly;
+
 
         /// <summary>
         /// 사용 중인 모든 리소스를 정리합니다.
@@ -50,6 +53,8 @@ namespace RemoteFileUpdate
             this.lblVersion = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.btnUploadOnly = new System.Windows.Forms.Button();
+            this.btnBackupOnly = new System.Windows.Forms.Button();
+            this.btnRollbackOnly = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
             this.SuspendLayout();
             // 
@@ -82,9 +87,9 @@ namespace RemoteFileUpdate
             // 
             // btnUpload
             // 
-            this.btnUpload.Location = new System.Drawing.Point(495, 278);
+            this.btnUpload.Location = new System.Drawing.Point(464, 269);
             this.btnUpload.Name = "btnUpload";
-            this.btnUpload.Size = new System.Drawing.Size(75, 23);
+            this.btnUpload.Size = new System.Drawing.Size(106, 23);
             this.btnUpload.TabIndex = 0;
             this.btnUpload.Text = "전송";
             this.btnUpload.Click += new System.EventHandler(this.btnUpload_Click);
@@ -122,7 +127,7 @@ namespace RemoteFileUpdate
             // 
             // txtLog
             // 
-            this.txtLog.Location = new System.Drawing.Point(20, 330);
+            this.txtLog.Location = new System.Drawing.Point(20, 302);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
@@ -132,16 +137,36 @@ namespace RemoteFileUpdate
             // 
             // btnUploadOnly
             // 
-            this.btnUploadOnly.Location = new System.Drawing.Point(353, 278);
+            this.btnUploadOnly.Location = new System.Drawing.Point(316, 269);
             this.btnUploadOnly.Name = "btnUploadOnly";
             this.btnUploadOnly.Size = new System.Drawing.Size(106, 23);
             this.btnUploadOnly.TabIndex = 5;
             this.btnUploadOnly.Text = "백업 없이 전송";
             this.btnUploadOnly.Click += new System.EventHandler(this.btnUploadOnly_Click);
             // 
+            // btnBackupOnly
+            // 
+            this.btnBackupOnly.Location = new System.Drawing.Point(168, 269);
+            this.btnBackupOnly.Name = "btnBackupOnly";
+            this.btnBackupOnly.Size = new System.Drawing.Size(106, 23);
+            this.btnBackupOnly.TabIndex = 6;
+            this.btnBackupOnly.Text = "백업만 수행";
+            this.btnBackupOnly.Click += new System.EventHandler(this.btnBackupOnly_Click);
+            // 
+            // btnRollbackOnly
+            // 
+            this.btnRollbackOnly.Location = new System.Drawing.Point(20, 269);
+            this.btnRollbackOnly.Name = "btnRollbackOnly";
+            this.btnRollbackOnly.Size = new System.Drawing.Size(106, 23);
+            this.btnRollbackOnly.TabIndex = 7;
+            this.btnRollbackOnly.Text = "롤백만 전송";
+            this.btnRollbackOnly.Click += new System.EventHandler(this.btnRollbackOnly_Click);
+            // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(592, 597);
+            this.ClientSize = new System.Drawing.Size(592, 569);
+            this.Controls.Add(this.btnRollbackOnly);
+            this.Controls.Add(this.btnBackupOnly);
             this.Controls.Add(this.btnUploadOnly);
             this.Controls.Add(this.comboProject);
             this.Controls.Add(this.txtVersion);
@@ -160,6 +185,8 @@ namespace RemoteFileUpdate
         #endregion
 
         private Button btnUploadOnly;
+        private Button button1;
+        private Button button2;
     }
 }
 
