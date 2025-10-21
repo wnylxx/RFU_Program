@@ -17,7 +17,11 @@ namespace RemoteFileUpdate
         private DataGridViewTextBoxColumn TargetPathCol;
         private Label lblVersion;
         private TextBox txtLog;
-        private Button btnBackupOnly;
+        private DataGridView gridDevices;
+        private DataGridViewTextBoxColumn DeviceIdCol;
+        private DataGridViewTextBoxColumn StatusCol;
+        private DataGridViewTextBoxColumn VersionCol;
+        private DataGridViewTextBoxColumn UpdateResultCol;
         private Button btnRollbackOnly;
 
 
@@ -52,141 +56,138 @@ namespace RemoteFileUpdate
             this.TargetPathCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lblVersion = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
-            this.btnUploadOnly = new System.Windows.Forms.Button();
-            this.btnBackupOnly = new System.Windows.Forms.Button();
             this.btnRollbackOnly = new System.Windows.Forms.Button();
+            this.gridDevices = new System.Windows.Forms.DataGridView();
+            this.DeviceIdCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.StatusCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.VersionCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.UpdateResultCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridDevices)).BeginInit();
             this.SuspendLayout();
-            // 
+
             // comboProject
-            // 
-            this.comboProject.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboProject.Items.AddRange(new object[] {
-            "CU"});
+            this.comboProject.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.comboProject.Items.AddRange(new object[] { "CU" });
             this.comboProject.Location = new System.Drawing.Point(20, 20);
             this.comboProject.Name = "comboProject";
             this.comboProject.Size = new System.Drawing.Size(150, 20);
             this.comboProject.TabIndex = 0;
             this.comboProject.SelectedIndexChanged += new System.EventHandler(this.comboProject_SelectedIndexChanged);
-            // 
+
             // txtVersion
-            // 
             this.txtVersion.Location = new System.Drawing.Point(190, 20);
             this.txtVersion.Name = "txtVersion";
             this.txtVersion.Size = new System.Drawing.Size(78, 21);
             this.txtVersion.TabIndex = 1;
-            // 
+
             // btnAddFile
-            // 
             this.btnAddFile.Location = new System.Drawing.Point(495, 18);
             this.btnAddFile.Name = "btnAddFile";
             this.btnAddFile.Size = new System.Drawing.Size(75, 23);
             this.btnAddFile.TabIndex = 2;
             this.btnAddFile.Text = "파일 추가";
             this.btnAddFile.Click += new System.EventHandler(this.btnAddFile_Click);
-            // 
-            // btnUpload
-            // 
-            this.btnUpload.Location = new System.Drawing.Point(464, 269);
-            this.btnUpload.Name = "btnUpload";
-            this.btnUpload.Size = new System.Drawing.Size(106, 23);
-            this.btnUpload.TabIndex = 0;
-            this.btnUpload.Text = "전송";
-            this.btnUpload.Click += new System.EventHandler(this.btnUpload_Click);
-            // 
+
             // gridFiles
-            // 
-            this.gridFiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.FileNameCol,
-            this.TargetPathCol});
+            this.gridFiles.Columns.AddRange(new DataGridViewColumn[] {
+                this.FileNameCol,
+                this.TargetPathCol
+            });
             this.gridFiles.Location = new System.Drawing.Point(20, 60);
             this.gridFiles.Name = "gridFiles";
-            this.gridFiles.Size = new System.Drawing.Size(550, 200);
-            this.gridFiles.TabIndex = 0;
-            // 
-            // FileNameCol
-            // 
+            this.gridFiles.Size = new System.Drawing.Size(550, 160);
+            this.gridFiles.TabIndex = 3;
+
             this.FileNameCol.HeaderText = "파일명";
             this.FileNameCol.Name = "FileNameCol";
             this.FileNameCol.Width = 230;
-            // 
-            // TargetPathCol
-            // 
+
             this.TargetPathCol.HeaderText = "Client 목적 경로";
             this.TargetPathCol.Name = "TargetPathCol";
             this.TargetPathCol.Width = 310;
-            // 
+
             // lblVersion
-            // 
             this.lblVersion.AutoSize = true;
             this.lblVersion.Location = new System.Drawing.Point(274, 25);
             this.lblVersion.Name = "lblVersion";
             this.lblVersion.Size = new System.Drawing.Size(53, 12);
-            this.lblVersion.TabIndex = 3;
+            this.lblVersion.TabIndex = 4;
             this.lblVersion.Text = "버전정보";
-            // 
+
+            // btnUpload
+            this.btnUpload.Location = new System.Drawing.Point(464, 228);
+            this.btnUpload.Name = "btnUpload";
+            this.btnUpload.Size = new System.Drawing.Size(106, 23);
+            this.btnUpload.TabIndex = 5;
+            this.btnUpload.Text = "업데이트 전송";
+            this.btnUpload.Click += new System.EventHandler(this.btnUpload_Click);
+
+            // btnRollbackOnly
+            this.btnRollbackOnly.Location = new System.Drawing.Point(20, 228);
+            this.btnRollbackOnly.Name = "btnRollbackOnly";
+            this.btnRollbackOnly.Size = new System.Drawing.Size(106, 23);
+            this.btnRollbackOnly.TabIndex = 6;
+            this.btnRollbackOnly.Text = "롤백만 전송";
+            this.btnRollbackOnly.Click += new System.EventHandler(this.btnRollbackOnly_Click);
+
+            // gridDevices
+            this.gridDevices.Columns.AddRange(new DataGridViewColumn[] {
+                this.DeviceIdCol,
+                this.StatusCol,
+                this.VersionCol,
+                this.UpdateResultCol
+            });
+            this.gridDevices.Location = new System.Drawing.Point(20, 270);
+            this.gridDevices.Name = "gridDevices";
+            this.gridDevices.Size = new System.Drawing.Size(550, 180);
+            this.gridDevices.TabIndex = 7;
+
+            this.DeviceIdCol.HeaderText = "Device ID";
+            this.DeviceIdCol.Name = "DeviceIdCol";
+            this.DeviceIdCol.Width = 120;
+
+            this.StatusCol.HeaderText = "연결 상태";
+            this.StatusCol.Name = "StatusCol";
+            this.StatusCol.Width = 100;
+
+            this.VersionCol.HeaderText = "현재 버전";
+            this.VersionCol.Name = "VersionCol";
+            this.VersionCol.Width = 120;
+
+            this.UpdateResultCol.HeaderText = "업데이트 결과";
+            this.UpdateResultCol.Name = "UpdateResultCol";
+            this.UpdateResultCol.Width = 180;
+
             // txtLog
-            // 
-            this.txtLog.Location = new System.Drawing.Point(20, 302);
+            this.txtLog.Location = new System.Drawing.Point(20, 470);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
-            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(550, 255);
-            this.txtLog.TabIndex = 4;
-            // 
-            // btnUploadOnly
-            // 
-            this.btnUploadOnly.Location = new System.Drawing.Point(316, 269);
-            this.btnUploadOnly.Name = "btnUploadOnly";
-            this.btnUploadOnly.Size = new System.Drawing.Size(106, 23);
-            this.btnUploadOnly.TabIndex = 5;
-            this.btnUploadOnly.Text = "백업 없이 전송";
-            this.btnUploadOnly.Click += new System.EventHandler(this.btnUploadOnly_Click);
-            // 
-            // btnBackupOnly
-            // 
-            this.btnBackupOnly.Location = new System.Drawing.Point(168, 269);
-            this.btnBackupOnly.Name = "btnBackupOnly";
-            this.btnBackupOnly.Size = new System.Drawing.Size(106, 23);
-            this.btnBackupOnly.TabIndex = 6;
-            this.btnBackupOnly.Text = "백업만 수행";
-            this.btnBackupOnly.Click += new System.EventHandler(this.btnBackupOnly_Click);
-            // 
-            // btnRollbackOnly
-            // 
-            this.btnRollbackOnly.Location = new System.Drawing.Point(20, 269);
-            this.btnRollbackOnly.Name = "btnRollbackOnly";
-            this.btnRollbackOnly.Size = new System.Drawing.Size(106, 23);
-            this.btnRollbackOnly.TabIndex = 7;
-            this.btnRollbackOnly.Text = "롤백만 전송";
-            this.btnRollbackOnly.Click += new System.EventHandler(this.btnRollbackOnly_Click);
-            // 
+            this.txtLog.ScrollBars = ScrollBars.Both;
+            this.txtLog.Size = new System.Drawing.Size(550, 180);
+            this.txtLog.TabIndex = 8;
+
             // Form1
-            // 
-            this.ClientSize = new System.Drawing.Size(592, 569);
+            this.ClientSize = new System.Drawing.Size(592, 670);
+            this.Controls.Add(this.gridDevices);
             this.Controls.Add(this.btnRollbackOnly);
-            this.Controls.Add(this.btnBackupOnly);
-            this.Controls.Add(this.btnUploadOnly);
+            this.Controls.Add(this.btnUpload);
             this.Controls.Add(this.comboProject);
             this.Controls.Add(this.txtVersion);
             this.Controls.Add(this.btnAddFile);
             this.Controls.Add(this.gridFiles);
-            this.Controls.Add(this.btnUpload);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.txtLog);
             this.Name = "Form1";
+            this.Text = "Remote File Update";
+
             ((System.ComponentModel.ISupportInitialize)(this.gridFiles)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridDevices)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
-
-        #endregion
-
-        private Button btnUploadOnly;
-        private Button button1;
-        private Button button2;
     }
 }
 
