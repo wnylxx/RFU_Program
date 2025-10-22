@@ -16,6 +16,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 
+
 namespace RemoteFileUpdate
 {
     public partial class Form1 : Form
@@ -35,6 +36,15 @@ namespace RemoteFileUpdate
                 Environment.Exit(1);
             }
         }
+
+        public class DeviceStatus
+        {
+            public string deviceId { get; set; }
+            public bool isConnected { get; set; }
+            public string version { get; set; }
+            public string lastUpdateStatus { get; set; }
+        }
+
         // upload 전 version과 파일 업로드 확인
         private bool TryGetProjectAndVersion(out string project, out string version)
         {
@@ -215,7 +225,7 @@ namespace RemoteFileUpdate
 
                     var status = parsed["status"]?.ToString();
 
-                    if(status == "progress")
+                    if (status == "progress")
                     {
                         int total = parsed["total"]?.Value<int>() ?? 0;
                         int received = parsed["received"]?.Value<int>() ?? 0;
@@ -272,7 +282,7 @@ namespace RemoteFileUpdate
                 foreach (string file in ofd.FileNames)
                 {
                     int rowIndex = gridFiles.Rows.Add();
-                    gridFiles.Rows[rowIndex].Cells[0].Value = file;
+                    gridFiles.Rows[rowIndex].Cells[0].Value = Path.GetFileName(file);
                     gridFiles.Rows[rowIndex].Cells[1].Value = "/home/pi/jdconnect/"; // 기본 경로
                 }
             }
@@ -339,6 +349,41 @@ namespace RemoteFileUpdate
             string ip = AppConfig.ServerIP;
             string port = AppConfig.ServerPort;
 
+            string apiUrl = $"http://{ip}:{port}/api/devices/{selectedProject}";
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var response = await client.GetAsync(apiUrl);
+                    response.EnsureSuccessStatusCode();
+
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+
+                    var deviceList = JsonConvert.DeserializeObject<List<DeviceStatus>>(jsonResponse);
+
+
+                    gridDevices.Rows.Clear();
+
+                    foreach (var device in deviceList)
+                    {
+                        gridDevices.Rows.Add(
+                            device.deviceId,
+                            device.isConnected ? "연결됨" : "미연결",
+                            device.version ?? "-",
+                            device.lastUpdateStatus ?? "-"
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"Device 목록을 불러오는 중 오류가 발생했습니다. {ex.Message}");
+            }
+
+
+
+
             try
             {
                 using (HttpClient client = new HttpClient())
@@ -376,98 +421,6 @@ namespace RemoteFileUpdate
             }
         }
 
-        private async void btnUploadOnly_Click(object sender, EventArgs e)
-        {
-            if (!TryGetProjectAndVersion(out string project, out string version)) return;
-
-            // 파일 압축
-            string zipPath = await CreateUpdateZipAsync(project, version);
-            if (zipPath == null) return;
-
-            string ip = AppConfig.ServerIP;
-            string port = AppConfig.ServerPort;
-            string url = $"http://{ip}:{port}/api/upload-only";
-
-            // 전송
-            using (var client = new HttpClient())
-            using (var content = new MultipartFormDataContent())
-            {
-                content.Add(new StringContent(project), "project");
-                content.Add(new StringContent(version), "version");
-                content.Add(new StreamContent(File.OpenRead(zipPath)), "file", $"{version}.zip");
-
-                try
-                {
-                    var response = await client.PostAsync(url, content);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        WriteLog($"{version} 업로드 성공");
-
-                        await FetchAndSetVersionAsync(project, lblVersion);
-
-                        StartUpdateMonitoring(project);
-                    }
-                    else
-                    {
-                        string err = await response.Content.ReadAsStringAsync();
-                        WriteLog("업로드 실패");
-                        MessageBox.Show("업로드 실패");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    WriteLog("전송 중 오류 발생");
-                    MessageBox.Show("전송 중 오류 발생: " + ex.Message);
-                }
-            }
-
-            // 정리
-            //Directory.Delete(tempDir, true);
-            File.Delete(zipPath);
-
-        }
-
-        private async void btnBackupOnly_Click(object sender, EventArgs e)
-        {
-            string project = comboProject.SelectedItem?.ToString();
-
-            if (string.IsNullOrEmpty(project))
-            {
-                MessageBox.Show("프로젝트를 선택해 주세요.");
-                return;
-            }
-
-            string ip = AppConfig.ServerIP;
-            string port = AppConfig.ServerPort;
-            string url = $"http://{ip}:{port}/api/backup-only";
-
-            try
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    var content = new StringContent(JsonConvert.SerializeObject(new { project }), Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(url, content);
-                    var responseBody = await response.Content.ReadAsStringAsync();
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        WriteLog("백업 명령 전송 완료");
-                        StartUpdateMonitoring(project);
-                    } 
-                    else
-                    {
-                        WriteLog("백업 명령 실패: " + responseBody);
-                        MessageBox.Show("백업 실패");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                WriteLog("백업 명령 오류: " + ex.Message);
-            }
-
-
-        }
 
         private async void btnRollbackOnly_Click(object sender, EventArgs e)
         {
@@ -487,8 +440,8 @@ namespace RemoteFileUpdate
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var content = new StringContent(JsonConvert.SerializeObject(new {project}), Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(url , content);
+                    var content = new StringContent(JsonConvert.SerializeObject(new { project }), Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(url, content);
                     var responseBody = await response.Content.ReadAsStringAsync();
 
                     if (response.IsSuccessStatusCode)
@@ -498,7 +451,7 @@ namespace RemoteFileUpdate
                     }
                     else
                     {
-                        WriteLog("롤백 실패: "+ responseBody);
+                        WriteLog("롤백 실패: " + responseBody);
                         MessageBox.Show("롤백 실패");
                     }
 
@@ -508,6 +461,11 @@ namespace RemoteFileUpdate
             {
                 WriteLog("롤백 명령 오류: " + ex.Message);
             }
+        }
+
+        private void btnClearFiles_Click(object sender, EventArgs e)
+        {
+            gridFiles.Rows.Clear();
         }
     }
 }
